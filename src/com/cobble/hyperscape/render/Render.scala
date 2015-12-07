@@ -17,17 +17,17 @@ object Render {
 	var window: Long = 0
 
 	def getWindowWidth: Int = {
-		getWindowSize._1
+        1080
 	}
 
 	def getWindowHeight: Int = {
-		getWindowSize._2
+		720
 	}
 
 	def getWindowSize: (Int, Int) = {
-		val w:IntBuffer = BufferUtils.createIntBuffer(1)
-		val h:IntBuffer = BufferUtils.createIntBuffer(1)
-		GLFW.glfwGetWindowSize(window, w, h)
-		(w.get(0), h.get(0))
+//		val w:IntBuffer = BufferUtils.createIntBuffer(1)
+//		val h:IntBuffer = BufferUtils.createIntBuffer(1)
+//		GLFW.glfwGetWindowSize(window, w, h)
+		(1080, 720)
 	}
 }
