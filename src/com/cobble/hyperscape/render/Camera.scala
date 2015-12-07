@@ -3,7 +3,7 @@ package com.cobble.hyperscape.render
 import com.cobble.hyperscape.reference.Reference
 import com.cobble.hyperscape.registry.ShaderRegistry
 import com.cobble.hyperscape.util.{GLUtil, MathUtil}
-import org.lwjgl.opengl.{Display, GL20}
+import org.lwjgl.opengl.GL20
 import org.lwjgl.util.vector.{Matrix4f, Vector3f}
 
 class Camera {
@@ -12,7 +12,7 @@ class Camera {
     var orthographicFov: Float = 160
     var nearClip: Float = 0.1f
     var farClip: Float = 30000
-    var perspective: Matrix4f = perspective(fov, Display.getWidth.toFloat / Display.getHeight.toFloat, nearClip, farClip)
+    var perspective: Matrix4f = perspective(fov, Render.getWindowWidth.toFloat / Render.getWindowHeight.toFloat, nearClip, farClip)
     var view = new Matrix4f()
     var pos = new Vector3f()
 
@@ -23,7 +23,7 @@ class Camera {
      * Updates the camera's perspective matrix. Used when the window is resized.
      */
     def updatePerspective(): Unit = {
-        perspective = perspective(fov, Display.getWidth.toFloat / Display.getHeight.toFloat, nearClip, farClip)
+        perspective = perspective(fov, Render.getWindowWidth.toFloat / Render.getWindowHeight.toFloat, nearClip, farClip)
     }
 
     private def perspective(fovInDegrees: Float, aspectRatio: Float, near: Float, far: Float): Matrix4f = {
@@ -34,8 +34,8 @@ class Camera {
             dimension = (right * 2f, top * 2f)
             frustum(-right, right, -top, top, near, far)
         } else {
-            val width: Float = Display.getWidth / VirtualResolution.getScale
-            val height: Float = Display.getHeight / VirtualResolution.getScale
+            val width: Float = Render.getWindowWidth / VirtualResolution.getScale
+            val height: Float = Render.getWindowHeight / VirtualResolution.getScale
             edges = (0f, width, 0f, height)
             dimension = (width, height)
             orthographicFrustum(0f, width, 0f, height, -2f, 25f)
@@ -81,7 +81,7 @@ class Camera {
         val loc = ShaderRegistry.getCurrentShader.getUniformLocation("projectionMatrix")
         perspective.store(Render.uploadBuffer)
         Render.uploadBuffer.flip()
-        GL20.glUniformMatrix4(loc, false, Render.uploadBuffer)
+        GL20.glUniformMatrix4fv(loc, false, Render.uploadBuffer)
         Render.uploadBuffer.clear()
     }
 
@@ -93,7 +93,7 @@ class Camera {
         val loc = ShaderRegistry.getCurrentShader.getUniformLocation("viewMatrix")
         view.store(Render.uploadBuffer)
         Render.uploadBuffer.flip()
-        GL20.glUniformMatrix4(loc, false, Render.uploadBuffer)
+        GL20.glUniformMatrix4fv(loc, false, Render.uploadBuffer)
         Render.uploadBuffer.clear()
     }
 

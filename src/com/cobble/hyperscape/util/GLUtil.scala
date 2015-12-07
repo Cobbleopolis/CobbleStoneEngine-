@@ -18,7 +18,7 @@ object GLUtil {
         matrix.store(Render.uploadBuffer)
         Render.uploadBuffer.flip()
         val modelMatrixLoc = ShaderRegistry.getCurrentShader.getUniformLocation("modelMatrix")
-        GL20.glUniformMatrix4(modelMatrixLoc, false, Render.uploadBuffer)
+        GL20.glUniformMatrix4fv(modelMatrixLoc, false, Render.uploadBuffer)
     }
 
     /**
