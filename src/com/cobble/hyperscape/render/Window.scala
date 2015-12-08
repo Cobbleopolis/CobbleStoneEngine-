@@ -2,7 +2,7 @@ package com.cobble.hyperscape.render
 
 import org.lwjgl.glfw.GLFW._
 import org.lwjgl.glfw.{GLFWWindowSizeCallback, GLFWVidMode, GLFWKeyCallback, GLFWErrorCallback}
-import org.lwjgl.opengl.GL
+import org.lwjgl.opengl.{GL11, GL}
 import org.lwjgl.system.MemoryUtil
 import org.lwjgl.glfw.GLFWWindowSizeCallback.SAM
 
@@ -12,6 +12,16 @@ object Window {
     private var keyCallback: GLFWKeyCallback = null
     private var windowSizeCallback: GLFWWindowSizeCallback = null
 
+	private var initalized = false
+
+	private var width: Int = 0
+	private var height: Int = 0
+
+	private var wasResized: Boolean = false
+
+	// The window handle
+	private var windowID: Long = 0
+
     def init(width: Int, height: Int, title: String, isFullscreen: Boolean): Unit = {
         errorCallback = GLFWErrorCallback.createPrint(System.err)
 
@@ -19,6 +29,13 @@ object Window {
             override def invoke(l: Long, i: Int, i1: Int, i2: Int, i3: Int): Unit = {}
 
         }
+
+	    windowSizeCallback = new GLFWWindowSizeCallback {
+		    override def invoke(window: Long, newWidth: Int, newHeight: Int): Unit = {
+				wasResized = true
+			    setSize(newWidth, newHeight)
+		    }
+	    }
 
         glfwSetErrorCallback(errorCallback)
 
@@ -31,35 +48,66 @@ object Window {
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE)
 
-        Render.window = glfwCreateWindow(width, height, title, if (isFullscreen) glfwGetPrimaryMonitor() else MemoryUtil.NULL, MemoryUtil.NULL)
-        if (Render.window == MemoryUtil.NULL)
+        windowID = glfwCreateWindow(width, height, title, if (isFullscreen) glfwGetPrimaryMonitor() else MemoryUtil.NULL, MemoryUtil.NULL)
+        if (windowID == MemoryUtil.NULL)
             throw new RuntimeException("Failed to create GLFW window")
 
-        glfwSetKeyCallback(Render.window, keyCallback)
+        glfwSetKeyCallback(windowID, keyCallback)
 
         val vidMode: GLFWVidMode = glfwGetVideoMode(glfwGetPrimaryMonitor())
 
         glfwSetWindowPos(
-            Render.window,
+	        windowID,
             (vidMode.width() - width) / 2,
             (vidMode.height() - height) / 2
         )
 
 
 
-        glfwMakeContextCurrent(Render.window)
+        glfwMakeContextCurrent(windowID)
         glfwSwapInterval(1)
-        glfwShowWindow(Render.window)
+        glfwShowWindow(windowID)
 
         GL.createCapabilities()
+	    initalized = true
+	    setSize(width, height)
     }
 
-    def destroy(): Unit = {
-        glfwDestroyWindow(Render.window)
-        keyCallback.release()
+	private def setWidth(newWidth: Int): Unit = width = newWidth
 
-        glfwTerminate()
-        errorCallback.release()
+	private def setHeight(newHeight: Int): Unit = height = newHeight
+
+	private def setSize(newWidth: Int, newHeight: Int): Unit = {
+		width = newWidth
+		height = newHeight
+	}
+
+    def getWidth: Int = width
+
+	def getHeight: Int = height
+
+	def getSize: (Int, Int) = (width, height)
+
+	def getWindowID: Long = windowID
+
+	def tick(): Unit = {
+		if (wasResized) {
+		    GL11.glViewport(0, 0, width, height)
+		    Render.mainCamera.updatePerspective()
+		    Render.mainCamera.uploadPerspective()
+		}
+		glfwSwapBuffers(windowID)
+		glfwPollEvents()
+		wasResized = false
+	}
+
+	def destroy(): Unit = {
+        glfwDestroyWindow(windowID)
+        keyCallback.release()
+		windowSizeCallback.release()
+
+		glfwTerminate()
+		errorCallback.release()
     }
 
     

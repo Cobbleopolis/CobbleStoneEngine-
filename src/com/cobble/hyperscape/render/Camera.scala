@@ -12,7 +12,7 @@ class Camera {
     var orthographicFov: Float = 160
     var nearClip: Float = 0.1f
     var farClip: Float = 30000
-    var perspective: Matrix4f = perspective(fov, Render.getWindowWidth.toFloat / Render.getWindowHeight.toFloat, nearClip, farClip)
+    var perspective: Matrix4f = perspective(fov, Window.getWidth.toFloat / Window.getHeight.toFloat, nearClip, farClip)
     var view = new Matrix4f()
     var pos = new Vector3f()
 
@@ -23,7 +23,7 @@ class Camera {
      * Updates the camera's perspective matrix. Used when the window is resized.
      */
     def updatePerspective(): Unit = {
-        perspective = perspective(fov, Render.getWindowWidth.toFloat / Render.getWindowHeight.toFloat, nearClip, farClip)
+        perspective = perspective(fov, Window.getWidth.toFloat / Window.getHeight.toFloat, nearClip, farClip)
     }
 
     private def perspective(fovInDegrees: Float, aspectRatio: Float, near: Float, far: Float): Matrix4f = {
@@ -34,8 +34,8 @@ class Camera {
             dimension = (right * 2f, top * 2f)
             frustum(-right, right, -top, top, near, far)
         } else {
-            val width: Float = Render.getWindowWidth / VirtualResolution.getScale
-            val height: Float = Render.getWindowHeight / VirtualResolution.getScale
+            val width: Float = Window.getWidth / VirtualResolution.getScale
+            val height: Float = Window.getHeight / VirtualResolution.getScale
             edges = (0f, width, 0f, height)
             dimension = (width, height)
             orthographicFrustum(0f, width, 0f, height, -2f, 25f)
